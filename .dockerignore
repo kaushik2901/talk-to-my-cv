@@ -1,0 +1,68 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Bytecode and compiled files
+*.so
+*.egg
+*.egg-info/
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Test and coverage
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Dotenv
+.env
+.env.*
+
+# Docker-related
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Build output
+build/
+dist/
+*.log
+*.manifest
+*.spec
+
+# Docs
+docs/_build/
