@@ -32,7 +32,6 @@ class ChatAgent:
             reply = response.choices[0].message.content
 
             if finish_reason != "tool_calls":
-
                 retry_attempt = 0
                 evaluation = self._evaluator.run(reply, message, history)
 
