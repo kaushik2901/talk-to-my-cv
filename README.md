@@ -13,7 +13,7 @@ A web application that allows users to interact with a chatbot representing a pr
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/kaushik2901/talk-to-my-cv.git
    cd talk-to-my-cv
    ```
 
