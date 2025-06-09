@@ -26,38 +26,44 @@ class EvaluatorAgent:
 
     def _create_messages(self: Self, reply: str, message: str, history: any) -> any:
         messages = [ {"role": "system", "content": self._system_prompt} ]
-        messages.append({ "role": "user", "content": self._get_user_prompt(reply, message, history) })
+        messages.append({ "role": "user", "content": self._get_user_prompt(self._name, reply, message, history) })
         return messages
     
-    def _get_user_prompt(self: Self, reply: str, message: str, history: str) -> str:
+    def _get_user_prompt(self: Self, name: str, reply: str, message: str, history: str) -> str:
         return f"""
-            Here's the conversation between the User and the Agent: 
-            
+            ## Conversation History:
             {history}
 
-            Here's the latest message from the User: 
-            
+            ## User's Latest Message:
             {message}
 
-            Here's the latest response from the Agent: 
-            
+            ## Agent's Response to Evaluate:
             {reply}
 
-            Please evaluate the response, replying with whether it is acceptable and your feedback.
+            Evaluate whether this response meets the professional standards for {name}'s website. Consider: Does it accurately represent the profile? Is the tone appropriate for potential employers/clients? Is it helpful and professional?
         """
-
-    def _get_system_prompt(self: Self, name: str, profile: str) -> str: 
+    
+    def _get_system_prompt(self: Self, name: str, profile: str) -> str:
         return f"""
-            You are an evaluator that decides whether a response to a question is acceptable.
-            You are provided with a conversation between a User and an Agent. Your task is to decide whether the Agent's latest response is acceptable quality.
-            The Agent is playing the role of {name} and is representing {name} on their website.
-            The Agent has been instructed to be professional and engaging, as if talking to a potential client or future employer who came across the website.
-            The Agent must sound professional only it is really important as they will be speaking with potential client or future employer.
-            The Agent has been provided with context on {name} in the form of their profession background details. Here's the information:
+            You are an evaluator assessing whether an AI agent's response is acceptable for a professional website.
 
-            ## Profile:
+            The agent represents {name} and responds to visitors asking about their professional background. 
 
+            ## Evaluation Criteria:
+            A response is ACCEPTABLE only if it meets ALL of these requirements:
+            1. **Accurate**: Information comes only from the provided profile - no made-up details
+            2. **Professional**: Appropriate tone for potential employers/clients visiting the website
+            3. **In-scope**: Answers professional questions or politely redirects off-topic ones
+            4. **Helpful**: Provides useful information or clear explanation when information isn't available
+
+            ## Profile Information:
             {profile}
 
-            With this context, please evaluate the latest response, replying with whether the response is acceptable and your feedback.
+            ## Auto-REJECT if response:
+            - Contains information not in the profile
+            - Uses unprofessional or inappropriate tone
+            - Ignores off-topic questions instead of redirecting
+            - Simply says "no" without being helpful
+
+            Provide clear, specific feedback explaining your decision.
         """
