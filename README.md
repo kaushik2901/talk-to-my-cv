@@ -26,6 +26,7 @@ A web application that allows users to interact with a chatbot representing a pr
    - Create a `.env` file in the root directory.
    - Add the following variables:
      ```
+     OPENAI_API_KEY=your_openai_api_key
      GEMINI_API_KEY=your_gemini_api_key
      ```
 

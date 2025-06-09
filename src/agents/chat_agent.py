@@ -18,7 +18,7 @@ class ChatAgent:
         self._MAX_REEVALUATION_ATTEMPTS = 3
 
     def chat(self: Self, message: str, history: any) -> str:
-        messages = self._createMessages(message, history)
+        messages = self._create_messages(message, history)
         done = False
 
         while not done:
@@ -43,7 +43,7 @@ class ChatAgent:
                 done = True
             else:
                 tool_call_message = response.choices[0].message
-                results = self._handleToolCall(tool_call_message.tool_calls, message, history)
+                results = self._handle_tool_call(tool_call_message.tool_calls, message, history)
                 messages.append(tool_call_message)
                 messages.extend(results)
 
@@ -54,7 +54,7 @@ class ChatAgent:
         response = self._client.chat.completions.create(model = self._model, messages = messages)
         return response.choices[0].message.content
     
-    def _handleToolCall(self: Self, tool_calls: any, message: str, history: any):
+    def _handle_tool_call(self: Self, tool_calls: any, message: str, history: any):
         results = []
 
         for tool_call in tool_calls:
@@ -74,7 +74,7 @@ class ChatAgent:
 
         return definitions
     
-    def _createMessages(self: Self, message: str, history: any) -> any:
+    def _create_messages(self: Self, message: str, history: any) -> any:
         messages = [ { "role": "system", "content": self._system_prompt } ] 
         messages.extend(history)
         messages.append({ "role": "user", "content": message })

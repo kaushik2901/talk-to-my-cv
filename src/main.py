@@ -1,13 +1,13 @@
 from dotenv import load_dotenv
 from agents.chat_agent import ChatAgent
-from utils.reader import get_file_text
+from utils.reader import read_file_text
 
 import gradio
 
 load_dotenv()
 
-name = get_file_text("../data/name.txt")
-summary = get_file_text("../data/profile.md")
+name = read_file_text("../data/name.txt")
+summary = read_file_text("../data/profile.md")
 
 agent = ChatAgent(name, summary, {})
 

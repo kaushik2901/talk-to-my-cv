@@ -37,7 +37,7 @@ coverage.xml
 .ipynb_checkpoints/
 
 # Dotenv
-.env
+!.env
 .env.*
 
 # Docker-related

@@ -3,7 +3,8 @@ FROM python:3.13.4-slim AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    GRADIO_SERVER_NAME="0.0.0.0"
 
 # Set the working directory
 WORKDIR /app

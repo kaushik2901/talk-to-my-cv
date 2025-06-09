@@ -16,7 +16,7 @@ class EvaluatorAgent:
         self._system_prompt = self._get_system_prompt(name, profile)
 
     def run(self: Self, reply: str, message: str, history: any) -> Evaluation:
-        messages = self._createMessages(reply, message, history)
+        messages = self._create_messages(reply, message, history)
         response = self._client.beta.chat.completions.parse(
             model = self._model, 
             messages = messages, 
@@ -24,7 +24,7 @@ class EvaluatorAgent:
         )
         return response.choices[0].message.parsed
 
-    def _createMessages(self: Self, reply: str, message: str, history: any) -> any:
+    def _create_messages(self: Self, reply: str, message: str, history: any) -> any:
         messages = [ {"role": "system", "content": self._system_prompt} ]
         messages.append({ "role": "user", "content": self._get_user_prompt(reply, message, history) })
         return messages
