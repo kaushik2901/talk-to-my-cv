@@ -1,19 +1,20 @@
 from typing import Self
 from openai import OpenAI
 from agents.evaluator_agent import EvaluatorAgent
+from tools.base_tool import BaseTool
 
 import json
 
 class ChatAgent:
 
-    def __init__(self, name: str, profile: str, tools: dict):
+    def __init__(self, name: str, profile: str):
         self._name = name
         self._profile = profile
         self._client = OpenAI()
         self._model = "gpt-4o-mini"
         self._system_prompt = self._get_system_prompt(name, profile)
-        self._tools = tools
-        self._tool_definitions = self._get_tool_definitions(tools)
+        self._tools = self._get_tools()
+        self._tool_definitions = self._get_tool_definitions(self._tools)
         self._evaluator = EvaluatorAgent(name, profile)
         self._MAX_REEVALUATION_ATTEMPTS = 3
 
@@ -60,19 +61,22 @@ class ChatAgent:
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
             arguments = json.loads(tool_call.function.arguments)
-            tool = self._tools.get(tool_name).function
-            result = tool(message, history, **arguments) if tool else {}
-            results.append(result)
+            tool = self._tools.get(tool_name)
+            result = tool.function(message, history, **arguments) if tool and tool.function else {}
+            results.append({ "role": "tool", "content": json.dumps(result), "tool_call_id": tool_call.id })
 
         return results
     
-    def _get_tool_definitions(self: Self, tools: dict):
+    def _get_tool_definitions(self: Self, tools: dict[str, BaseTool]):
         definitions = []
 
         for tool_name in tools:
-            definitions.append({ "type": "function", "function": tools.get(tool_name).definition })
+            definitions.append({ "type": "function", "function": json.dumps(tools.get(tool_name).definition) })
 
         return definitions
+    
+    def _get_tools(self: Self) -> dict[str, BaseTool]:
+        return {}
     
     def _create_messages(self: Self, message: str, history: any) -> any:
         messages = [ { "role": "system", "content": self._system_prompt } ] 
