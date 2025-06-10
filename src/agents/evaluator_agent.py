@@ -1,33 +1,67 @@
 import os
 from typing import Self
-from openai import OpenAI
+from openai import OpenAI, APIError, RateLimitError, APITimeoutError
 from models.evaluation import Evaluation
+import logging
+
+logger = logging.getLogger(__name__)
+
+class EvaluatorAgentError(Exception):
+    """Base exception class for EvaluatorAgent errors"""
+    pass
 
 class EvaluatorAgent:
     
     def __init__(self, name: str, profile: str):
         self._name = name
         self._profile = profile
-        self._client = OpenAI(
-            api_key = os.getenv('GEMINI_API_KEY'),
-            base_url = 'https://generativelanguage.googleapis.com/v1beta/openai/'
-        )
+        try:
+            self._client = OpenAI(
+                api_key = os.getenv('GEMINI_API_KEY'),
+                base_url = 'https://generativelanguage.googleapis.com/v1beta/openai/'
+            )
+            logger.info("EvaluatorAgent initialized", extra = {'agent_name': name})
+        except Exception as e:
+            logger.error("Failed to initialize OpenAI client", extra = {'error': str(e)})
+            raise EvaluatorAgentError(f"Failed to initialize OpenAI client: {str(e)}")
+            
         self._model = "gemini-2.0-flash"
         self._system_prompt = self._get_system_prompt(name, profile)
 
     def run(self: Self, reply: str, message: str, history: any) -> Evaluation:
-        messages = self._create_messages(reply, message, history)
-        response = self._client.beta.chat.completions.parse(
-            model = self._model, 
-            messages = messages, 
-            response_format = Evaluation
-        )
-        return response.choices[0].message.parsed
+        try:
+            logger.info("Starting evaluation", extra = {'reply_length': len(reply), 'message_length': len(message)})
+            messages = self._create_messages(reply, message, history)
+            response = self._client.beta.chat.completions.parse(
+                model = self._model, 
+                messages = messages, 
+                response_format = Evaluation
+            )
+            evaluation = response.choices[0].message.parsed
+            logger.info("Evaluation completed", extra = {'is_acceptable': evaluation.is_acceptable})
+            return evaluation
+        except RateLimitError:
+            logger.error("Rate limit exceeded during evaluation")
+            raise EvaluatorAgentError("Rate limit exceeded. Please try again later.")
+        except APITimeoutError:
+            logger.error("Request timed out during evaluation")
+            raise EvaluatorAgentError("Request timed out. Please try again.")
+        except APIError as e:
+            logger.error("OpenAI API error during evaluation", extra = {'error': str(e)})
+            raise EvaluatorAgentError(f"OpenAI API error: {str(e)}")
+        except Exception as e:
+            logger.error("Unexpected error in evaluation", extra = {'error': str(e)})
+            raise EvaluatorAgentError(f"Unexpected error in evaluation: {str(e)}")
 
     def _create_messages(self: Self, reply: str, message: str, history: any) -> any:
-        messages = [ {"role": "system", "content": self._system_prompt} ]
-        messages.append({ "role": "user", "content": self._get_user_prompt(self._name, reply, message, history) })
-        return messages
+        try:
+            messages = [{"role": "system", "content": self._system_prompt}]
+            messages.append({"role": "user", "content": self._get_user_prompt(self._name, reply, message, history)})
+            logger.debug("Evaluation messages created", extra = {'message_count': len(messages)})
+            return messages
+        except Exception as e:
+            logger.error("Error creating evaluation messages", extra = {'error': str(e)})
+            raise EvaluatorAgentError(f"Error creating messages: {str(e)}")
     
     def _get_user_prompt(self: Self, name: str, reply: str, message: str, history: str) -> str:
         return f"""
