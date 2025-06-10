@@ -8,5 +8,5 @@ class BaseTool(ABC):
         self.definition = definition
 
     @abstractmethod
-    def function(self: Self, *args) -> dict:
-        return { "arguments": args }
+    def function(self: Self, *args, **kwargs) -> dict:
+        return { "arguments": [args, kwargs] }
